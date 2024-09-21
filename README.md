@@ -1,6 +1,6 @@
-# Utilities for processing integers and sorting arrays.
+# IntProcessor: Unique Integer Processor.
 
-This project includes two utility functions: 'IntegerProcessor', which processes integers from a file, and'sortArray', which sorts an array of numbers using the Quick Sort method. It also provides a string stripping function to tidy up the input data.
+The **IntProcessor** project contains a utility for processing integers from a text file. It extracts and sorts unique numbers, then writes the results to a separate output file. This program is excellent for jobs that need data cleaning and integer processing.
 
 ## Installation
 
