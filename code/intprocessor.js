@@ -1,52 +1,58 @@
 const fs = require('fs'); 
 const path = require('path'); 
 
-// Class for processing integers from a file
+// A class for processing integers from a file, ensuring they are within a certain range
 class IntProcessor {
-    constructor(stripFunction, sortFunction) {
-        this.stripFunction = stripFunction; 
-        this.sortFunction = sortFunction; 
+    constructor(lineCleaner, numberSorter) {
+        this.lineCleaner = lineCleaner; 
+        this.numberSorter = numberSorter; 
     }
 
-    processFile(fileLines) {
+    // Processes lines from the file to extract unique integers
+    processFile(lines) {
         const uniqueIntegers = new Set(); 
 
-        for (const line of fileLines) {
-            const strippedLine = this.stripFunction(line); 
-            if (!strippedLine) continue; 
+        for (const line of lines) {
+            const cleanedLine = this.lineCleaner(line); 
+            if (!cleanedLine) continue;  
 
-            const parts = strippedLine.split(/\s+/); 
-            if (parts.length !== 1) continue; 
+            const parts = cleanedLine.split(/\s+/); 
+            if (parts.length !== 1) continue;  
 
-            const processedInteger = parseInt(parts[0], 10); 
-            if (!isNaN(processedInteger) && processedInteger >= -1023 && processedInteger <= 1023) {
-                uniqueIntegers.add(processedInteger); 
+            const parsedInteger = parseInt(parts[0], 10); 
+            if (!isNaN(parsedInteger) && parsedInteger >= -1023 && parsedInteger <= 1023) {
+                uniqueIntegers.add(parsedInteger);  
             }
         }
 
-        return this.sortFunction(Array.from(uniqueIntegers)); 
+        return this.numberSorter(Array.from(uniqueIntegers));  
     }
 
-    readAndWriteToFile(inputFileName) {
+    // Reads from the input file and writes processed unique integers to an output file
+    processFileToOutput(inputFileName) {
         try {
-            const rawData = fs.readFileSync(inputFileName, 'utf-8').split('\n');
+            const rawData = fs.readFileSync(inputFileName, 'utf-8').split('\n'); 
             const processedData = this.processFile(rawData); 
 
             if (processedData.length === 0) {
-                console.warn("No valid integers found."); 
+                console.warn("Warning: No valid integers were found in the provided file."); 
             }
 
             const outputFileName = `${inputFileName.replace('.txt', '')}_results.txt`; 
             fs.writeFileSync(outputFileName, processedData.join('\n') + '\n'); 
 
-            console.log(`Data written to: ${outputFileName}`);
+            console.log(`Results successfully written to: ${outputFileName}`); 
         } catch (error) {
-            console.error(`Failed to open file: ${error.message}`); 
+            if (error.code === 'ENOENT') {
+                console.error(`Error: File '${inputFileName}' not found.`); 
+            } else {
+                console.error(`Failed to open file: ${error.message}`); 
+            }
         }
     }
 }
 
-// Main execution block that runs when the script is executed directly
+// Main block to run when the script is executed directly
 if (require.main === module) {
     const fileName = process.argv[2]; 
 
@@ -55,14 +61,15 @@ if (require.main === module) {
         process.exit(1); 
     }
 
+    // Create an IntProcessor instance with specific cleaner and sorter functions
     const processor = new IntProcessor(
-        line => line.trim(), 
-        arr => arr.sort((a, b) => a - b) 
+        line => line.trim(),              
+        numbers => numbers.sort((a, b) => a - b)  
     );
 
     const startTime = Date.now(); 
-    processor.readAndWriteToFile(fileName); 
-    const endTime = Date.now();
+    processor.processFileToOutput(fileName); 
+    const endTime = Date.now(); 
 
-    console.log(`Run time: ${(endTime - startTime)} ms`);
+    console.log(`Run time: ${(endTime - startTime)} ms`); 
 }
